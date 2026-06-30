@@ -1,0 +1,10 @@
+# Runtime dependencies for app/rank.py (the Docker reproduction step).
+# rank.py only SCORES against precomputed artifacts — it does not run the
+# embedding model — so sentence-transformers/torch are deliberately NOT here.
+# Replace pins below with your exact `pip freeze` versions before final commit.
+
+numpy==1.26.4
+pandas==2.2.2
+
+# Dependencies for precompute/precompute.py (run separately on Colab T4, NOT
+# part of the Docker reproduction step) are listed in precompute/requirements.txt

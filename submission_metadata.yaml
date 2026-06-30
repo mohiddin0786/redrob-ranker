@@ -1,0 +1,96 @@
+# Redrob Hackathon — Submission Metadata
+# Filled from project notes. Fields marked TODO need your input before submitting.
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "TODO"  # your registered participant/team ID — must match the CSV filename
+
+primary_contact:
+  name: "Roshan"
+  email: "TODO"
+  phone: "TODO"
+
+team_members:
+  - name: "Roshan"
+    email: "TODO"
+    role: "ML Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "TODO"   # e.g. https://github.com/your-username/redrob-ranker
+
+sandbox_link: "TODO"  # e.g. a Colab notebook link that runs rank.py on a small sample
+# Not yet created — see Section 10.5 of submission_spec.md for acceptable platforms.
+
+reproduce_command: "docker build -t redrob-ranker . && docker run --rm -v \"$(pwd)/data:/data\" redrob-ranker"
+# Verify this exact command produces submission.csv end-to-end before submitting.
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Local Windows machine (Intel Core i5-13420H)"
+  cpu_cores: "TODO"          # confirm core count
+  ram_gb: 16
+  python_version: "3.11"     # Docker image; local dev uses 3.12 — Docker is what's reproduced
+  os: "Windows 11 (Docker Desktop)"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: true
+  pre_computation_time_minutes: 13   # Colab T4 GPU precompute step
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+
+ai_usage_summary: |
+  Used Claude for architecture discussion, scoring-formula design, debugging
+  (including the candidates.jsonl format bug, honeypot detection logic, and
+  domain_fit_score corrections), and documentation. No candidate data was
+  sent to any external LLM API as part of the ranking pipeline itself —
+  rank.py performs no LLM calls; all reasoning strings are rule-based
+  templates over real candidate field values.
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  Two-phase pipeline: offline precompute (Colab T4) generates BGE
+  (bge-small-en-v1.5) sentence embeddings, 10-dim career features, and
+  10-dim behavioral features for all 100K candidates; online ranking
+  (Docker, CPU, <5min) combines them via
+  final = 0.40*semantic_cosine + 0.35*career_score + 0.25*behavioral_score,
+  with honeypots hard-zeroed before scoring.
+
+  Career score applies consulting, research, and domain-fit penalties
+  multiplicatively (not as additive weight terms) on top of a weighted
+  feature dot product — this lets a single strong disqualifier (e.g.
+  CV-primary career history, consulting-only background) suppress a
+  candidate regardless of how strong other features look, which a purely
+  additive model can't do.
+
+  Semantic embedding input uses skill-duration thresholding (skills held
+  ≥12 months are emphasized; shorter-duration "expert" claims are
+  down-weighted) to prevent keyword-stuffed profiles from inflating
+  semantic similarity. YoE uses a tent function (peaks at 5-9 years) rather
+  than monotonic scaling, penalizing both under- and over-qualification.
+
+  Exact search via NumPy dot product over L2-normalized embeddings replaces
+  a vector database at this scale (~50ms for 100K candidates), with no
+  ANN approximation loss.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: false   # TODO — set true only after you've actually run
+                                # the docker build/run reproduce_command end-to-end
+                                # and confirmed it produces a valid submission.csv

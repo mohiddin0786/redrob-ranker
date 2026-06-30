@@ -1,0 +1,8 @@
+# Dependencies for the offline precompute step (Colab T4 GPU).
+# Not installed in the Docker ranking image — see top-level requirements.txt.
+
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+sentence-transformers==2.7.0
+tqdm==4.66.4
