@@ -29,3 +29,5 @@ submission_draft*.csv
 *.tmp
 
 echo precompute/*.bak.ipynb
+
+precompute/*.bak.ipynb
