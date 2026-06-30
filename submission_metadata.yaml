@@ -4,22 +4,21 @@
 # ============================================================================
 # Team identity
 # ============================================================================
-team_name: "TODO"  # your registered participant/team ID — must match the CSV filename
+team_name: "VecForge"  # your registered participant/team ID — must match the CSV filename
 
 primary_contact:
-  name: "Roshan"
-  email: "TODO"
-  phone: "TODO"
+  name: "Md. Mowla Mohiddin"
+  email: "mowlamohiddinmohammad@gmail.com"
+  phone: 8985604060
 
 team_members:
-  - name: "Roshan"
-    email: "TODO"
-    role: "ML Engineer"
+  - name: "Derangula Hasini"
+    email: "hasiniderangulaa@gmail.com"
 
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "TODO"   # e.g. https://github.com/your-username/redrob-ranker
+github_repo: "https://github.com/mohiddin0786/redrob-ranker"   # e.g. https://github.com/your-username/redrob-ranker
 
 sandbox_link: "TODO"  # e.g. a Colab notebook link that runs rank.py on a small sample
 # Not yet created — see Section 10.5 of submission_spec.md for acceptable platforms.
@@ -32,7 +31,7 @@ reproduce_command: "docker build -t redrob-ranker . && docker run --rm -v \"$(pw
 # ============================================================================
 compute:
   platform: "Local Windows machine (Intel Core i5-13420H)"
-  cpu_cores: "TODO"          # confirm core count
+  cpu_cores: 10          # confirm core count
   ram_gb: 16
   python_version: "3.11"     # Docker image; local dev uses 3.12 — Docker is what's reproduced
   os: "Windows 11 (Docker Desktop)"
