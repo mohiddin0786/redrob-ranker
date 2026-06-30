@@ -27,3 +27,5 @@ Thumbs.db
 # Submission scratch files (keep only the final validated one under submission/)
 submission_draft*.csv
 *.tmp
+
+echo precompute/*.bak.ipynb
