@@ -1,0 +1,29 @@
+# Candidate data — never commit the actual dataset
+data/*.jsonl
+data/*.jsonl.gz
+data/*.json
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+
+# Local env / secrets
+.env
+
+# Submission scratch files (keep only the final validated one under submission/)
+submission_draft*.csv
+*.tmp

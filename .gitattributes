@@ -1,0 +1,10 @@
+# Track large precomputed binary artifacts with Git LFS.
+# Run `git lfs install` once per machine, then `git lfs pull` after cloning.
+
+artifacts/embeddings.npy filter=lfs diff=lfs merge=lfs -text
+artifacts/career_features.npy filter=lfs diff=lfs merge=lfs -text
+artifacts/behavioral_features.npy filter=lfs diff=lfs merge=lfs -text
+artifacts/honeypot_flags.npy filter=lfs diff=lfs merge=lfs -text
+
+# candidate_ids.json is just an ID list (small) — kept as regular git text,
+# not LFS, so it's diffable.
