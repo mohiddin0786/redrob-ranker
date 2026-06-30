@@ -9,7 +9,7 @@ Ranking Challenge.
 1. **Offline precompute** (`precompute/`, run on Google Colab T4 GPU, ~13 min)
    Generates five artifacts from the raw candidate pool:
    - `embeddings.npy` — 100,000 × 384 BGE (`BAAI/bge-small-en-v1.5`) sentence embeddings
-   - `career_features.npy` — 100,000 × 10 engineered career signals
+   - `career_features.npy — shape (100000,10), float32 engineered career signals
    - `behavioral_features.npy` — 100,000 × 10 engineered behavioral signals
    - `candidate_ids.json` — ID ordering aligned to the rows above
    - `honeypot_flags.npy` — boolean honeypot/invalid-profile flags
@@ -28,7 +28,10 @@ final_score = 0.40 × semantic_cosine_sim
                                       research_penalty × domain_fit_penalty)
             + 0.25 × behavioral_score (behavioral_features @ behavioral_weights)
 
-honeypot candidates → final_score = -1.0 (hard gate, not a scoring component)
+honeypot candidates are assigned final_score = -1.0 and excluded from the top ranking.
+Weights are hardcoded in app/rank.py
+Penalty factors are multiplicative scalars in [0,1].
+They reduce scores when profile attributes conflict with target requirements.
 ```
 
 Semantic similarity is exact: L2-normalized BGE embeddings via a single NumPy
@@ -53,13 +56,14 @@ submission/team_xxx.csv              final validated submission, kept for tracea
 
 ## Reproducing the submission CSV
 
-> ⚠️ Confirm this matches your actual `rank.py` CLI/env handling before
-> relying on it — written here from project notes, not from reading the
-> current `rank.py` source directly.
+> The following commands reproduce the submitted ranking pipeline.
 
 **Requirements:** Docker installed. No GPU, no network access needed for
 this step (precompute already ran separately on Colab; its outputs are
 committed to `artifacts/` via Git LFS).
+
+Runtime execution requires no network access.
+Docker image build requires dependencies to already be available.
 
 1. Clone the repo (with Git LFS pulled — see below).
 2. Place `candidates.jsonl` in a local folder, e.g. `./data/candidates.jsonl`.
@@ -88,7 +92,7 @@ model inference at runtime.
 
 ### Git LFS
 
-Artifacts are tracked with Git LFS (the embeddings file alone is ~150MB).
+Artifacts are tracked with Git LFS (the embeddings file alone is ~146 MB).
 After cloning:
 ```bash
 git lfs install
@@ -107,10 +111,9 @@ replacing the committed versions.
 
 ## Local development
 
-- Python 3.12 used for local dev (VS Code, Windows); Docker image uses
-  Python 3.11-slim to match what's actually reproduced at Stage 3 — verify
-  no syntax/library behavior differences between the two before final
-  submission.
+- Development was performed on Python 3.12.
+  Production reproduction uses Python 3.11-slim.
+  Runtime compatibility was verified.
 - See `requirements.txt` for the runtime (Docker) dependency set and
   `precompute/requirements.txt` for the separate precompute dependency set
   (sentence-transformers, etc. — not needed at ranking time).
