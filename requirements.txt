@@ -4,7 +4,6 @@
 # Replace pins below with your exact `pip freeze` versions before final commit.
 
 numpy==1.26.4
-pandas==2.2.2
 
 # Dependencies for precompute/precompute.py (run separately on Colab T4, NOT
 # part of the Docker reproduction step) are listed in precompute/requirements.txt

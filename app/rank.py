@@ -20,16 +20,14 @@ import json
 import argparse
 import csv
 from datetime import date
-from sentence_transformers import SentenceTransformer
-from scipy.stats import rankdata
 
 import numpy as np
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
-DATA_DIR      = os.environ.get("DATA_DIR",      "D:/India.run/resume_ranker/data")
-ARTIFACT_DIR  = os.environ.get("ARTIFACT_DIR",  "D:/India.run/resume_ranker/artifacts")
-DEFAULT_OUT   = os.environ.get("OUTPUT_PATH",   "submission2.csv")
+DATA_DIR      = os.environ.get("DATA_DIR",      "data")
+ARTIFACT_DIR  = os.environ.get("ARTIFACT_DIR",  "artifacts")
+DEFAULT_OUT   = os.environ.get("OUTPUT_PATH",   "submission/team_vecForge.csv")
 
 CANDIDATES_FILE     = os.path.join(DATA_DIR,     "candidates.jsonl")
 EMBEDDINGS_FILE     = os.path.join(ARTIFACT_DIR, "embeddings.npy")
@@ -37,35 +35,6 @@ CAREER_FEAT_FILE    = os.path.join(ARTIFACT_DIR, "career_features.npy")
 BEHAVIORAL_FEAT_FILE= os.path.join(ARTIFACT_DIR, "behavioral_features.npy")
 CANDIDATE_IDS_FILE  = os.path.join(ARTIFACT_DIR, "candidate_ids.json")
 HONEYPOT_MASK_FILE  = os.path.join(ARTIFACT_DIR, "honeypot_flags.npy")
-
-# ── JD Query (used for semantic embedding match) ───────────────────────────────
-# Distilled from the JD: covers must-haves + domain vocabulary.
-# Precomputed at runtime with the same model used in precompute.py.
-JD_QUERY = (
-    # Core identity — what this person IS
-    "Applied ML engineer who has shipped production ranking, search, or recommendation systems "
-    "to real users at a product company. Not a researcher. Not a consultant. "
-    "End-to-end ownership of ML systems from design to deployment. "
-
-    # The actual technical depth needed
-    "Production experience with dense retrieval and embeddings: sentence-transformers, BGE, E5, "
-    "OpenAI embeddings. Handled embedding drift, index refresh, retrieval quality regression. "
-    "Hands-on with vector databases in production: FAISS, Qdrant, Weaviate, Pinecone, "
-    "OpenSearch, Elasticsearch, Milvus. Hybrid search combining BM25 and dense retrieval. "
-    "Evaluation frameworks for ranking systems: NDCG, MRR, MAP, offline-to-online correlation, "
-    "A/B testing. Learning-to-rank models: XGBoost, LambdaMART, neural re-ranking. "
-    "LLM integration for re-ranking or query understanding. Fine-tuning with LoRA, QLoRA, PEFT. "
-    "Strong Python, production code quality, not just notebook prototypes. "
-
-    # Seniority and attitude
-    "5 to 9 years experience. Senior engineer who still writes production code. "
-    "Scrappy product mindset: ships working systems quickly, iterates on real user feedback. "
-    "Has strong opinions on retrieval architecture and can defend them. "
-
-    # Location and availability
-    "Based in or willing to relocate to Pune or Noida or Delhi NCR. "
-    "Available and actively looking, short notice period preferred."
-)
 
 # ── Scoring weights ────────────────────────────────────────────────────────────
 
@@ -112,16 +81,11 @@ assert abs(BW.sum() - 1.0) < 1e-5, "Behavioral weights must sum to 1.0"
 
 
 # ── JD embedding ──────────────────────────────────────────────────────────────
-
-def embed_jd_query(query: str) -> np.ndarray:
-    """Encode JD query using same model as precompute.py."""
-
-    print("Loading embedding model (BAAI/bge-small-en-v1.5)...")
-    model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-    # BGE models benefit from a query prefix
-    prefixed = f"Represent this sentence for searching relevant passages: {query}"
-    vec = model.encode([prefixed], normalize_embeddings=True, show_progress_bar=False)
-    return vec[0].astype(np.float32)  # shape (384,)
+def load_jd_embedding(artifact_dir: str) -> np.ndarray:
+    """Load precomputed JD embedding artifact (computed offline in Colab)."""
+    path = os.path.join(artifact_dir, "jd_embedding.npy")
+    vec = np.load(path)
+    return vec.astype(np.float32)  # shape (384,)
 
 
 # ── Scoring ───────────────────────────────────────────────────────────────────
@@ -325,7 +289,7 @@ def main():
     assert len(honeypot_mask)   == N
 
     # ── 2. Embed JD query ──────────────────────────────────────────────────────
-    jd_vec = embed_jd_query(JD_QUERY)  # (384,) float32, normalized
+    jd_vec = load_jd_embedding(ARTIFACT_DIR) # (384,) float32, normalized
     print(f"  JD embedding shape: {jd_vec.shape}, norm: {np.linalg.norm(jd_vec):.4f}")
 
     # ── 3. Score all candidates ────────────────────────────────────────────────
@@ -363,6 +327,7 @@ def main():
 
     # ── 6. Write CSV ───────────────────────────────────────────────────────────
     print(f"Writing output to {args.out}...")
+    os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
