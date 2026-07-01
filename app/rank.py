@@ -347,8 +347,8 @@ def main():
 
     print(f"\nDone. Top 100 written to: {args.out}")
     print(f"  Rank 1:   {top100_ids[0]}  score={top100_scores[0]:.6f}")
-    print(f"  Rank 100: {top100_ids[99]} score={top100_scores[99]:.6f}")
-
+    last_idx = min(len(top100_ids), 100) - 1
+    print(f"  Rank {last_idx+1}: {top100_ids[last_idx]} score={top100_scores[last_idx]:.6f}")
 
 if __name__ == "__main__":
     main()
