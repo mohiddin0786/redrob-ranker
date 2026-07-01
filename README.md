@@ -13,11 +13,14 @@ Ranking Challenge.
    - `behavioral_features.npy` — 100,000 × 10 engineered behavioral signals
    - `candidate_ids.json` — ID ordering aligned to the rows above
    - `honeypot_flags.npy` — boolean honeypot/invalid-profile flags
+   - `jd_embedding.npy` — precomputed BGE embedding (384,) of the JD query,
+     generated offline instead of loading the embedding model at ranking time
 
 2. **Online ranking** (`app/rank.py`, runs in Docker, CPU-only, <5 min)
    Loads the precomputed artifacts, scores every candidate, hard-zeros
    honeypots, and writes the top-100 submission CSV. No model inference,
-   no network calls, no GPU.
+   no network calls, no GPU. Runtime dependency footprint is a single
+   package: NumPy.
 
 ## Scoring
 
@@ -48,6 +51,7 @@ app/rank.py                          online ranking step (this is what Docker ru
 precompute/precompute.py             offline feature/embedding generation (reference)
 precompute/redrob_precompute_colab.ipynb   the actual notebook run on Colab T4
 artifacts/                           precomputed .npy / .json outputs (Git LFS)
+sandbox/                             small 100-candidate sample + matching artifact slice, used by the hosted Colab sandbox demo
 data/                                candidates.jsonl mounted here at runtime (not committed)
 docs/architecture.md                 design rationale, scoring details
 docs/methodology_summary.md          short methodology summary (also in submission_metadata.yaml)
@@ -75,15 +79,20 @@ Docker image build requires dependencies to already be available.
    ```bash
    docker run --rm \
      -v "$(pwd)/data:/data" \
+     -v "$(pwd)/submission:/app/submission" \
      redrob-ranker
    ```
    This reads `candidates.jsonl` from the mounted `/data` volume (via the
    `DATA_DIR=/data` environment variable set in the Dockerfile) and writes
    `submission.csv` to the same mounted folder.
 
+   Note: the second `-v` mount is required — without it, the output CSV is
+   written inside the ephemeral container and discarded on exit
+   (`docker run --rm`).
+
 Single reproduce command (also declared in `submission_metadata.yaml`):
 ```bash
-docker build -t redrob-ranker . && docker run --rm -v "$(pwd)/data:/data" redrob-ranker
+docker build -t redrob-ranker . && docker run --rm -v "$(pwd)/data:/data" -v "$(pwd)/submission:/app/submission" redrob-ranker
 ```
 
 Compute budget: ≤5 minutes wall-clock, ≤16GB RAM, CPU-only, no network — all
@@ -101,6 +110,15 @@ git lfs pull
 If `artifacts/*.npy` show up as small text pointer files instead of binary
 data after cloning, LFS didn't pull — re-run `git lfs pull` before building
 the Docker image.
+
+## Hosted sandbox demo
+
+A small self-contained demo runs in Google Colab (link in
+`submission_metadata.yaml`). It clones this repo and runs `app/rank.py`
+against `sandbox/candidates_sample.jsonl` (100 real candidates) with
+matching sliced artifacts, end-to-end on CPU. This is a small-sample
+sanity check only, not a reflection of full ranking quality. See
+`make_sandbox.py` for how the sample was generated.
 
 ## Regenerating artifacts (optional, not part of Stage 3 reproduction)
 

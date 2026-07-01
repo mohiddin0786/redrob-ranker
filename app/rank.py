@@ -27,7 +27,7 @@ import numpy as np
 
 DATA_DIR      = os.environ.get("DATA_DIR",      "data")
 ARTIFACT_DIR  = os.environ.get("ARTIFACT_DIR",  "artifacts")
-DEFAULT_OUT   = os.environ.get("OUTPUT_PATH",   "submission/team_vecForge.csv")
+DEFAULT_OUT   = os.environ.get("OUTPUT_PATH",   "submission/team_VecForge.csv")
 
 CANDIDATES_FILE     = os.path.join(DATA_DIR,     "candidates.jsonl")
 EMBEDDINGS_FILE     = os.path.join(ARTIFACT_DIR, "embeddings.npy")

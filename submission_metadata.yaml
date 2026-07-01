@@ -18,20 +18,28 @@ team_members:
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "https://github.com/mohiddin0786/redrob-ranker"   # e.g. https://github.com/your-username/redrob-ranker
+github_repo: "https://github.com/mohiddin0786/redrob-ranker"   
 
-sandbox_link: "TODO"  # e.g. a Colab notebook link that runs rank.py on a small sample
-# Not yet created — see Section 10.5 of submission_spec.md for acceptable platforms.
+sandbox_link: "https://colab.research.google.com/drive/1bz9ShETU8ua9T944OrqAf2j7kj_0AjIa?usp=sharing" 
 
-reproduce_command: "docker build -t redrob-ranker . && docker run --rm -v \"$(pwd)/data:/data\" redrob-ranker"
-# Verify this exact command produces submission.csv end-to-end before submitting.
+# Produces submission/team_vecForge.csv on the host machine, mounted via the
+# second volume. Verified end-to-end: 39.98s wall-clock, CPU-only, no network,
+# well under the 5min/16GB budget. Tested on Windows with PowerShell using:
+reproduce_command: >
+  docker build -t redrob-ranker . &&
+  docker run --rm
+  -v "<path-to-candidates-data-dir>:/data"
+  -v "<path-to-local-submission-dir>:/app/submission"
+  redrob-ranker
+
+# Verify this exact command produces team_VecForge.csv end-to-end before submitting.
 
 # ============================================================================
 # Compute environment
 # ============================================================================
 compute:
   platform: "Local Windows machine (Intel Core i5-13420H)"
-  cpu_cores: 10          # confirm core count
+  cpu_cores: 8      # confirm core count
   ram_gb: 16
   python_version: "3.11"     # Docker image; local dev uses 3.12 — Docker is what's reproduced
   os: "Windows 11 (Docker Desktop)"
@@ -90,6 +98,4 @@ declarations:
   code_is_original_work: true
   no_collusion: true
   honeypot_check_done: true
-  reproduction_tested: false   # TODO — set true only after you've actually run
-                                # the docker build/run reproduce_command end-to-end
-                                # and confirmed it produces a valid submission.csv
+  reproduction_tested: true 

@@ -447,7 +447,50 @@ for fname in artifact_files:
     else:
         print(f'⚠ Missing: {fname} — did Cell 6 complete successfully?')
 
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
+# Exact JD_QUERY string from rank.py (lines 44-68) — must match exactly,
+# since this determines the JD embedding semantics.
+JD_QUERY = (
+    # Core identity — what this person IS
+    "Applied ML engineer who has shipped production ranking, search, or recommendation systems "
+    "to real users at a product company. Not a researcher. Not a consultant. "
+    "End-to-end ownership of ML systems from design to deployment. "
+
+    # The actual technical depth needed
+    "Production experience with dense retrieval and embeddings: sentence-transformers, BGE, E5, "
+    "OpenAI embeddings. Handled embedding drift, index refresh, retrieval quality regression. "
+    "Hands-on with vector databases in production: FAISS, Qdrant, Weaviate, Pinecone, "
+    "OpenSearch, Elasticsearch, Milvus. Hybrid search combining BM25 and dense retrieval. "
+    "Evaluation frameworks for ranking systems: NDCG, MRR, MAP, offline-to-online correlation, "
+    "A/B testing. Learning-to-rank models: XGBoost, LambdaMART, neural re-ranking. "
+    "LLM integration for re-ranking or query understanding. Fine-tuning with LoRA, QLoRA, PEFT. "
+    "Strong Python, production code quality, not just notebook prototypes. "
+
+    # Seniority and attitude
+    "5 to 9 years experience. Senior engineer who still writes production code. "
+    "Scrappy product mindset: ships working systems quickly, iterates on real user feedback. "
+    "Has strong opinions on retrieval architecture and can defend them. "
+
+    # Location and availability
+    "Based in or willing to relocate to Pune or Noida or Delhi NCR. "
+    "Available and actively looking, short notice period preferred."
+)
+model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+# Same query prefix rank.py currently applies at runtime — replicated here
+# so the artifact is equivalent to what embed_jd_query() used to compute.
+prefixed = f"Represent this sentence for searching relevant passages: {JD_QUERY}"
+jd_vec = model.encode([prefixed], normalize_embeddings=True, show_progress_bar=False)
+jd_vec = jd_vec[0].astype(np.float32)  # shape (384,)
+
+np.save("jd_embedding.npy", jd_vec)
+print("Saved jd_embedding.npy, shape:", jd_vec.shape)
+
+# Download it, then move into your repo's artifacts/ folder
+from google.colab import files
+files.download("jd_embedding.npy")
 
 
 
