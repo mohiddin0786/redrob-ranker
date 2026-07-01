@@ -327,7 +327,9 @@ def main():
 
     # ── 6. Write CSV ───────────────────────────────────────────────────────────
     print(f"Writing output to {args.out}...")
-    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    out_dir = os.path.dirname(args.out)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     with open(args.out, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["candidate_id", "rank", "score", "reasoning"])
